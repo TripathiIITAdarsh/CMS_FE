@@ -52,3 +52,15 @@ export default tseslint.config({
   },
 })
 ```
+
+Installation & Setup
+Clone the repository
+bash
+git clone https://github.com/TripathiIITAdarsh/CMS_FE.git
+cd CMS_FE/cms-frontend
+
+Install Dependencies
+npm install
+
+Start the development server
+npm run dev 
