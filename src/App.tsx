@@ -23,16 +23,19 @@
 
 // App.jsx
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StudentList from "./navbar/navbar";
+import StudentDash from './pages/studentDashboard';
 
 function App() {
   return (
-    <div>
-      <StudentList />
-      <div className="mt-20 p-4">
-        <h1 className="text-2xl">Welcome to My Site!</h1>
-      </div>
-    </div>
+    <BrowserRouter>
+    <Routes>
+        <Route path="/" element={<StudentList />} />
+        <Route path="/student/:enrollment" element={<StudentDash />} />
+    </Routes>
+    </BrowserRouter>
+    
   );
 }
 
