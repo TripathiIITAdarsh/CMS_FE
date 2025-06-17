@@ -1,40 +1,95 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
+
+type StudentData = {
+  name: string;
+  branch: string;
+  program: string;
+  enrollment: string;
+  batch: number;
+  courseProgress: {
+    ic: number;
+    todoic: number;
+    dc: number;
+    tododc: number;
+    hss: number;
+    todohss: number;
+    de: number;
+    todode: number;
+    fe: number;
+    todofe: number;
+  };
+};
 
 const StudentDash = () => {
-  const [data, setData] = useState<any>(null);
+  const [student, setStudent] = useState<StudentData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { enrollment } = useParams();
 
   useEffect(() => {
-    axios.get('https://api.example.com/data')
-      .then((response) => setData(response.data))
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+    if (!enrollment) {
+      setError('No enrollment ID provided');
+      setLoading(false);
+      return;
+    }
 
-  // Mock example values — replace with real values from `data`
-  const name = data?.name || "John Doe";
-  const currDate = new Date().toLocaleDateString();
-  const totalCredits = data?.credits || 24;
+    fetch(`http://localhost:4000/api/student/${enrollment}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch student data');
+        return res.json();
+      })
+      .then(data => {
+        setStudent(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [enrollment]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!student) return <div>No student data found</div>;
 
   return (
-    <div className="content">
-      {/* Welcome Section */}
-      <div className="welcome-section">
-        <div className="welcome-info">
-          <img src="/asset/5856.jpg" alt="Profile" />
-          <div>
-            <h2>Welcome, {name}</h2>
-            <p>{currDate}</p>
-          </div>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      {/* Profile Section */}
+      <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+        <h2>Student Profile</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <p><strong>Name:</strong> {student.name}</p>
+          <p><strong>Branch:</strong> {student.branch}</p>
+          <p><strong>Program:</strong> {student.program}</p>
+          <p><strong>Enrollment:</strong> {student.enrollment}</p>
+          <p><strong>Batch:</strong> {student.batch}</p>
         </div>
-        <div className="points-meter">
-          <div className="meter-container">
-            <div className="meter">
-              <div className="gauge"></div>
-            </div>
+      </div>
+
+      {/* Course Progress Section */}
+      <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+        <h2>Course Progress</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div>
+            <h3>IC Department</h3>
+            <p>Completed: {student.courseProgress.ic}/{student.courseProgress.todoic} credits</p>
           </div>
-          <div className="points-info">
-            <p>My Total Points</p>
-            <h3>{totalCredits}</h3>
+          <div>
+            <h3>DC Department</h3>
+            <p>Completed: {student.courseProgress.dc}/{student.courseProgress.tododc} credits</p>
+          </div>
+          <div>
+            <h3>HSS Department</h3>
+            <p>Completed: {student.courseProgress.hss}/{student.courseProgress.todohss} credits</p>
+          </div>
+          <div>
+            <h3>DE Department</h3>
+            <p>Completed: {student.courseProgress.de}/{student.courseProgress.todode} credits</p>
+          </div>
+          <div>
+            <h3>FE Department</h3>
+            <p>Completed: {student.courseProgress.fe}/{student.courseProgress.todofe} credits</p>
           </div>
         </div>
       </div>

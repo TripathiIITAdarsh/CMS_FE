@@ -23,19 +23,16 @@
 
 // App.jsx
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StudentList from "./navbar/navbar";
-import { BrowserRouter,Route, Routes } from 'react-router-dom';
-import SlotWiseCourses from './pages/pre_regitstration';
 
 function App() {
   return (
     <div>
-      <BrowserRouter>
-          <Routes>
-              <Route path = '/' element = {<StudentList/>}></Route>
-              <Route path = '/pre_reg' element = {<SlotWiseCourses/>}></Route>
-          </Routes>
-      </BrowserRouter>
+      <StudentList />
+      <div className="mt-20 p-4">
+        <h1 className="text-2xl">Welcome to My Site!</h1>
+      </div>
     </div>
   );
 }
