@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SlotComponent from "../components/SlotComponent";
 
-// The interface remains as you originally provided it.
 interface Course {
   course_id: string;
   course_code: string;
@@ -11,7 +10,7 @@ interface Course {
   credits: number;
 }
 
-const uid = "22XX230";
+const uid = "23NH586";
 
 const SlotWiseCourses = () => {
   const [groupedCourses, setGroupedCourses] = useState<Record<string, Course[]>>({});
@@ -23,7 +22,7 @@ const SlotWiseCourses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const student_id = "22XX230"; // Or get this dynamically
+        const student_id = "23NH586"; // Or get this dynamically
         if (!student_id) {
           setError("Student ID not found");
           setLoading(false);

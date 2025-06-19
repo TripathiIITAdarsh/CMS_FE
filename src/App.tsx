@@ -22,25 +22,34 @@
 
 
 // App.jsx
+// App.tsx
+// App.tsx
 import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
 import StudentList from "./navbar/navbar";
-import { BrowserRouter,Route, Routes } from 'react-router-dom';
 import SlotWiseCourses from './pages/Pre_regitstration';
 import StudentDash from './pages/studentDashboard';
 
-
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-          <Routes>
-              <Route path = '/' element = {<StudentList/>}></Route>
-              <Route path="/student/:enrollment" element={<StudentDash />} />
-              <Route path = '/pre_reg' element = {<SlotWiseCourses/>}></Route>
-          </Routes>
-      </BrowserRouter>
-    </div>
-
+    <BrowserRouter>
+      <div className="flex min-h-screen">
+        {/* Sidebar - now properly integrated in layout */}
+        <Sidebar />
+        
+        {/* Main content area with responsive margin */}
+        <main className="flex-1 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen transition-all duration-300 md:ml-72 p-4 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            <Routes>
+              <Route path='/' element={<StudentList />} />
+              <Route path='/student/:enrollment' element={<StudentDash />} />
+              <Route path='/pre_reg' element={<SlotWiseCourses />} />
+            </Routes>
+          </div>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 
