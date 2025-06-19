@@ -25,7 +25,7 @@
 import React from 'react';
 import StudentList from "./navbar/navbar";
 import { BrowserRouter,Route, Routes } from 'react-router-dom';
-import SlotWiseCourses from './pages/pre_regitstration';
+import SlotWiseCourses from './pages/Pre_regitstration';
 import StudentDash from './pages/studentDashboard';
 
 
