@@ -24,7 +24,6 @@
 // App.jsx
 // App.tsx
 // App.tsx
-import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import StudentList from "./navbar/navbar";
