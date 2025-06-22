@@ -30,6 +30,7 @@ import Sidebar from './components/Sidebar';
 import StudentList from "./navbar/navbar";
 import SlotWiseCourses from './pages/Pre_regitstration';
 import StudentDash from './pages/studentDashboard';
+import CoursesRegistered from './pages/Pre_registered_courses';
 
 function App() {
   return (
@@ -45,6 +46,8 @@ function App() {
               <Route path='/' element={<StudentList />} />
               <Route path='/student/:enrollment' element={<StudentDash />} />
               <Route path='/pre_reg' element={<SlotWiseCourses />} />
+             
+<Route path='/courses-registered/:studentId?' element={<CoursesRegistered />} />
             </Routes>
           </div>
         </main>
