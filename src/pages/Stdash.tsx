@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from './LoginPage';
 
 type StudentProfile = {
   student_id: string;
@@ -22,10 +23,6 @@ const Dashboard = () => {
   const [student, setStudent] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // ✅ Hardcoded for now
-  const student_id = '21BI575';
-  const uid = 'df37aabe-77f0-4095-af0b-d073ef7cef0e';
 
   // Hardcoded course progress data - only percentages
   const courseProgress: CourseProgress[] = [
@@ -65,24 +62,28 @@ const Dashboard = () => {
       percentage: 0
     }
   ];
+  const {apiCall} = useAuth(); // This should work now
 
-  useEffect(() => {
-    axios
-      .get('http://localhost:3000/details', {
-        params: {
-          student_id,
-          uid,
-        },
-      })
-      .then((res) => {
-        setStudent(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+useEffect(() => {
+  const fetchDetails = async () => {
+    try {
+      const response = await apiCall('/details');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch details');
+      }
+      
+      const data = await response.json();
+      setStudent(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  fetchDetails();
+}, [apiCall]);
 
   if (loading) {
     return (

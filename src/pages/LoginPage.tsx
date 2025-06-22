@@ -1,18 +1,52 @@
-import  { useState, useContext, createContext, useEffect } from 'react';
-import {  Eye, EyeOff, User, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { useState, useContext, createContext, useEffect, ReactNode } from 'react';
+import { Eye, EyeOff, User, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
-// Auth Context
-const AuthContext = createContext({
+// Types
+interface User {
+  student: {
+    student_id: string;
+    name?: string;
+    [key: string]: any;
+  };
+  user: {
+    uid: string;
+    email?: string;
+    [key: string]: any;
+  };
+}
+
+interface LoginCredentials {
+  student_id: string;
+  password: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean; data: any }>;
+  logout: () => void;
+  isAuthenticated: boolean;
+  loading: boolean;
+  apiCall: (url: string, options?: RequestInit) => Promise<Response>;
+}
+
+// Auth Context with proper default values
+const AuthContext = createContext<AuthContextType>({
   user: null,
-  login: async () => {},
-  logout: () => {},
+  login: async () => { throw new Error('AuthProvider not found') },
+  logout: () => { throw new Error('AuthProvider not found') },
   isAuthenticated: false,
-  loading: false
+  loading: true,
+  apiCall: async () => { throw new Error('AuthProvider not found') }
 });
 
 // Auth Provider Component
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // API base URL
@@ -25,7 +59,8 @@ export const AuthProvider = ({ children }) => {
     
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('token');
@@ -36,7 +71,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (credentials) => {
+  const login = async (credentials: LoginCredentials) => {
     try {
       const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
@@ -54,31 +89,30 @@ export const AuthProvider = ({ children }) => {
 
       // Store token and user data
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify({
+      const userData = {
         student: data.student,
         user: data.user
-      }));
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      setUser({
-        student: data.student,
-        user: data.user
-      });
+      setUser(userData);
 
       return { success: true, data };
     } catch (error) {
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
     }
   };
 
   // Logout function
   const logout = () => {
+    console.log("logout called")
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
   };
 
   // API helper for protected routes
-  const apiCall = async (url, options = {}) => {
+  const apiCall = async (url: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('token');
     
     if (!token) {
@@ -104,7 +138,7 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     login,
     logout,
@@ -121,7 +155,7 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Custom hook to use auth context
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -140,7 +174,27 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e) => {
+  // Auth context
+  const { isAuthenticated, loading: authLoading, login: authLogin } = useAuth();
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -168,45 +222,26 @@ export default function LoginPage() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:3000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          student_id: formData.student_id,
-          password: formData.password
-        }),
+      // Use the context login function
+      await authLogin({
+        student_id: formData.student_id,
+        password: formData.password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      // Store token and user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify({
-        student: data.student,
-        user: data.user
-      }));
 
       setSuccess('Login successful! Redirecting...');
       
-      // Redirect to dashboard after successful login
-      setTimeout(() => {
-        window.location.href = '/student/dashboard';
-      }, 1500);
-
+      // The redirect will happen automatically due to the Navigate component above
+      // when isAuthenticated becomes true after successful login
+      
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading) {
       handleLogin();
     }
@@ -224,18 +259,15 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8">
           {/* Logo Section */}
-                    <div className="text-center mb-8">
-                        <img
-                            src="https://iitmandi.samarth.ac.in/uploads/uims/ea5086a2733de95ab628e64aa6da8ba80808129b3c7dc0fdb28f357b9beab6011_1605882012_27287335_logo.png"
-                            alt="Institute Logo"
-                            className="w-24 h-24 mx-auto mb-4 rounded-xl shadow-md"
-                        />
-                        {/* END OF LOGO REPLACEMENT AREA */}
-
-                        <h1 className="text-2xl font-bold text-gray-800 mb-2">IIT MANDI</h1>
-                        <p className="text-gray-600 text-sm">Student Portal Login</p>
-                    </div>
-
+          <div className="text-center mb-8">
+            <img
+              src="https://iitmandi.samarth.ac.in/uploads/uims/ea5086a2733de95ab628e64aa6da8ba80808129b3c7dc0fdb28f357b9beab6011_1605882012_27287335_logo.png"
+              alt="Institute Logo"
+              className="w-24 h-24 mx-auto mb-4 rounded-xl shadow-md"
+            />
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">IIT MANDI</h1>
+            <p className="text-gray-600 text-sm">Student Portal Login</p>
+          </div>
 
           {/* Error/Success Messages */}
           {error && (
@@ -357,42 +389,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-// Example usage of protected API calls after login:
-/*
-// Component that makes protected API calls
-const Dashboard = () => {
-  const { apiCall, user, logout } = useAuth();
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await apiCall('/slot-wise/prereg?student_id=' + user.student.student_id);
-        
-        if (!response.ok) throw new Error('Failed to fetch courses');
-        
-        const data = await response.json();
-        setCourses(data.groupedCourses);
-      } catch (error) {
-        console.error('Error fetching courses:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchCourses();
-    }
-  }, [apiCall, user]);
-
-  return (
-    <div>
-      <h1>Welcome, {user?.student?.name}</h1>
-      <button onClick={logout}>Logout</button>
-      {loading ? <p>Loading...</p> : <div>Course data here...</div>}
-    </div>
-  );
-};
-*/
