@@ -39,7 +39,7 @@ function App() {
         
         {/* Main content area with responsive margin */}
         <main className="flex-1 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen transition-all duration-300 md:ml-72 p-4 md:p-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-8xl mx-auto">
             <Routes>
               <Route path='/' element={<StudentList />} />
               <Route path='/student/:enrollment' element={<StudentDash />} />

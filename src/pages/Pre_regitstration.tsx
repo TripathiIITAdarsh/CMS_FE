@@ -10,7 +10,6 @@ interface Course {
   credits: number;
 }
 
-const uid = "23NH586";
 
 const SlotWiseCourses = () => {
   const [groupedCourses, setGroupedCourses] = useState<Record<string, Course[]>>({});
@@ -20,41 +19,45 @@ const SlotWiseCourses = () => {
   const remainingSubmissions = 2; // update dynamically as needed
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const student_id = "23NH586"; // Or get this dynamically
-        if (!student_id) {
-          setError("Student ID not found");
-          setLoading(false);
-          return;
-        }
-        // The API call is now active.
-        const response = await axios.get("http://localhost:3000/slot-wise/prereg", {
-          params: { uid, student_id }
-        });
-        setGroupedCourses(response.data.groupedCourses);
-      } catch (err) {
-        console.error("API Error:", err);
-        // Provide a more user-friendly error message
-        setError("Could not connect to the server. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourses();
-  }, []);
+  const fetchCourses = async () => {
+    try {
+      const student_id = "21BI575";
+      const uid = "df37aabe-77f0-4095-af0b-d073ef7cef0e";
 
-  const toggleCourse = (id: string) => {
-    setSelectedCourses(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+      const response = await axios.get("http://localhost:3000/courses/final_courses");
+      const rawCourses: Course[] = response.data.final_courses;
+
+      const grouped = rawCourses.reduce((acc: Record<string, Course[]>, course) => {
+        const slot = course.slot || "Unslotted";
+        if (!acc[slot]) acc[slot] = [];
+        acc[slot].push(course);
+        return acc;
+      }, {});
+
+      setGroupedCourses(grouped); 
+    } catch (err) {
+      console.error("API Error:", err);
+      setError("Could not connect to the server. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  fetchCourses();
+}, []);
+
+const toggleCourse = (id: string) => {
+  setSelectedCourses(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    return next;
+  });
+};
+
 
   const handleSubmit = () => {
     console.log("Submitting:", Array.from(selectedCourses));
@@ -89,6 +92,7 @@ const SlotWiseCourses = () => {
         </div>
 
         <div className="space-y-6">
+            {/* Map through grouped courses and render SlotComponent for each slot */}
             {Object.entries(groupedCourses).map(([slot, courses]) => (
                 <SlotComponent
                   key={slot}
