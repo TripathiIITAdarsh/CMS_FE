@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 type StudentData = {
   name: string;
@@ -54,42 +54,47 @@ const StudentDash = () => {
   if (!student) return <div>No student data found</div>;
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      {/* Profile Section */}
-      <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-        <h2>Student Profile</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <p><strong>Name:</strong> {student.name}</p>
-          <p><strong>Branch:</strong> {student.branch}</p>
-          <p><strong>Program:</strong> {student.program}</p>
-          <p><strong>Enrollment:</strong> {student.enrollment}</p>
-          <p><strong>Batch:</strong> {student.batch}</p>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Sidebar */}
+      
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        {/* Profile Section */}
+        <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+          <h2>Student Profile</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <p><strong>Name:</strong> {student.name}</p>
+            <p><strong>Branch:</strong> {student.branch}</p>
+            <p><strong>Program:</strong> {student.program}</p>
+            <p><strong>Enrollment:</strong> {student.enrollment}</p>
+            <p><strong>Batch:</strong> {student.batch}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Course Progress Section */}
-      <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-        <h2>Course Progress</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div>
-            <h3>IC Department</h3>
-            <p>Completed: {student.courseProgress.ic}/{student.courseProgress.todoic} credits</p>
-          </div>
-          <div>
-            <h3>DC Department</h3>
-            <p>Completed: {student.courseProgress.dc}/{student.courseProgress.tododc} credits</p>
-          </div>
-          <div>
-            <h3>HSS Department</h3>
-            <p>Completed: {student.courseProgress.hss}/{student.courseProgress.todohss} credits</p>
-          </div>
-          <div>
-            <h3>DE Department</h3>
-            <p>Completed: {student.courseProgress.de}/{student.courseProgress.todode} credits</p>
-          </div>
-          <div>
-            <h3>FE Department</h3>
-            <p>Completed: {student.courseProgress.fe}/{student.courseProgress.todofe} credits</p>
+        {/* Course Progress Section */}
+        <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+          <h2>Course Progress</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <h3>IC Department</h3>
+              <p>Completed: {student.courseProgress.ic}/{student.courseProgress.todoic} credits</p>
+            </div>
+            <div>
+              <h3>DC Department</h3>
+              <p>Completed: {student.courseProgress.dc}/{student.courseProgress.tododc} credits</p>
+            </div>
+            <div>
+              <h3>HSS Department</h3>
+              <p>Completed: {student.courseProgress.hss}/{student.courseProgress.todohss} credits</p>
+            </div>
+            <div>
+              <h3>DE Department</h3>
+              <p>Completed: {student.courseProgress.de}/{student.courseProgress.todode} credits</p>
+            </div>
+            <div>
+              <h3>FE Department</h3>
+              <p>Completed: {student.courseProgress.fe}/{student.courseProgress.todofe} credits</p>
+            </div>
           </div>
         </div>
       </div>

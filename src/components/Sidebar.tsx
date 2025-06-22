@@ -9,6 +9,7 @@ import {
 
 const routes = [
   { path: '/', label: 'Home', icon: Home },
+  { path: '/student/details', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/pre_reg', label: 'Pre‑Registration', icon: ClipboardList },
     { path: '/student/22XX230', label: 'Pre registered courses', icon: LayoutDashboard },
   { path: '/courses', label: 'My Courses', icon: BookOpen },

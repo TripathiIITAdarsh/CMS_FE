@@ -10,6 +10,7 @@ interface Course {
   credits: number;
 }
 
+const uid = "23WN038";
 
 const SlotWiseCourses = () => {
   const [groupedCourses, setGroupedCourses] = useState<Record<string, Course[]>>({});
@@ -19,10 +20,29 @@ const SlotWiseCourses = () => {
   const remainingSubmissions = 2; // update dynamically as needed
 
   useEffect(() => {
-  const fetchCourses = async () => {
-    try {
-      const student_id = "21BI575";
-      const uid = "df37aabe-77f0-4095-af0b-d073ef7cef0e";
+    const fetchCourses = async () => {
+      try {
+        const student_id = "23WN038"; // Or get this dynamically
+        if (!student_id) {
+          setError("Student ID not found");
+          setLoading(false);
+          return;
+        }
+        // The API call is now active.
+        const response = await axios.get("http://localhost:3000/slot-wise/prereg", {
+          params: { uid, student_id }
+        });
+        setGroupedCourses(response.data.groupedCourses);
+      } catch (err) {
+        console.error("API Error:", err);
+        // Provide a more user-friendly error message
+        setError("Could not connect to the server. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
       const response = await axios.get("http://localhost:3000/courses/final_courses");
       const rawCourses: Course[] = response.data.final_courses;

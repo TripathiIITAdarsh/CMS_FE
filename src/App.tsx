@@ -29,6 +29,7 @@ import Sidebar from './components/Sidebar';
 import StudentList from "./navbar/navbar";
 import SlotWiseCourses from './pages/Pre_regitstration';
 import StudentDash from './pages/studentDashboard';
+import Dashboard from './pages/Stdash';
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
               <Route path='/' element={<StudentList />} />
               <Route path='/student/:enrollment' element={<StudentDash />} />
               <Route path='/pre_reg' element={<SlotWiseCourses />} />
+              <Route path='/student/details' element={<Dashboard />} />
+              
             </Routes>
           </div>
         </main>
