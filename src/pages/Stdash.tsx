@@ -67,7 +67,7 @@ const Dashboard = () => {
 useEffect(() => {
   const fetchDetails = async () => {
     try {
-      const response = await apiCall('/details');
+      const response = await apiCall('http://localhost:3000/details');
       
       if (!response.ok) {
         throw new Error('Failed to fetch details');
@@ -75,6 +75,11 @@ useEffect(() => {
       
       const data = await response.json();
       setStudent(data);
+
+      // Here I am storing student profile to the local storage so that I do not have to make request every time to fetch them
+      localStorage.setItem('studentProfile', JSON.stringify(data)); 
+
+
       setLoading(false);
     } catch (err) {
       setError(err.message);

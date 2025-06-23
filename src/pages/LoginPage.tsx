@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   // API base URL
-  const API_BASE = 'http://localhost:3000';
+  const API_BASE = '';
 
   // Check if user is logged in on app start
   useEffect(() => {

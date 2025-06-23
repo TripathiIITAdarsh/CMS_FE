@@ -8,14 +8,22 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../pages/LoginPage';
 const routes = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/student/details', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/pre_reg', label: 'Pre‑Registration', icon: ClipboardList },
     { path: 'courses-registered/:studentId?', label: 'Pre registered courses', icon: LayoutDashboard },
   { path: '/courses', label: 'My Courses', icon: BookOpen },
-  { path: '/settings', label: 'Settings', icon: Settings },
-  { path: '/help', label: 'Help Center', icon: HelpCircle },
+
 ];
+
+const studentString = localStorage.getItem('studentProfile');
+let studentProfile: any = null;
+
+if (studentString) {
+  studentProfile = JSON.parse(studentString);
+}
+
+
+
 
 export default function Sidebar() {
   const [open, setOpen] = React.useState(false);
@@ -123,8 +131,9 @@ const { logout } = useAuth();
                 <span className="font-bold text-white">JS</span>
               </div>
               <div className="ml-3">
-                <p className="font-medium text-white text-sm">John Smith</p>
-                <p className="text-xs text-blue-200">Student ID: 22XX230</p>
+                <p className="font-medium text-white text-sm">{studentProfile?.name}</p>
+                <p className="text-xs text-blue-200">{studentProfile?.student_id}</p>
+
               </div>
               <button
                 onClick={logout}
