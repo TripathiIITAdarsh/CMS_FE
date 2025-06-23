@@ -1,24 +1,34 @@
 // components/Sidebar.tsx
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  Home, LayoutDashboard, ClipboardList, 
-  X, Menu, GraduationCap, Settings, 
-  BookOpen, HelpCircle, LogOut 
+import {
+  Home, LayoutDashboard, ClipboardList,
+  X, Menu, GraduationCap, Settings,
+  BookOpen, HelpCircle, LogOut
 } from 'lucide-react';
-
+import { useAuth } from '../pages/LoginPage';
 const routes = [
-  { path: '/', label: 'Home', icon: Home },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/pre_reg', label: 'Pre‑Registration', icon: ClipboardList },
     { path: 'courses-registered/:studentId?', label: 'Pre registered courses', icon: LayoutDashboard },
   { path: '/courses', label: 'My Courses', icon: BookOpen },
-  { path: '/settings', label: 'Settings', icon: Settings },
-  { path: '/help', label: 'Help Center', icon: HelpCircle },
+
 ];
+
+const studentString = localStorage.getItem('studentProfile');
+let studentProfile: any = null;
+
+if (studentString) {
+  studentProfile = JSON.parse(studentString);
+}
+
+
+
 
 export default function Sidebar() {
   const [open, setOpen] = React.useState(false);
-  
+const { logout } = useAuth();
+
   // Close sidebar when pressing Escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -72,9 +82,9 @@ export default function Sidebar() {
                 <p className="text-sm text-blue-200 font-light">Student Management System</p>
               </div>
             </div>
-            
+
             {/* Close button for mobile (visible only on small screens) */}
-            <button 
+            <button
               className="md:hidden p-2 rounded-lg text-blue-200 hover:bg-blue-700/50 hover:text-white transition-colors"
               onClick={() => setOpen(false)}
               aria-label="Close sidebar"
@@ -82,7 +92,7 @@ export default function Sidebar() {
               <X size={24} />
             </button>
           </div>
-          
+
           {/* Navigation links */}
           <ul className="mt-4 px-3 flex-1">
             {routes.map((r) => (
@@ -91,15 +101,15 @@ export default function Sidebar() {
                   to={r.path}
                   className={({ isActive }) =>
                     `flex items-center px-4 py-3 rounded-xl transition-all duration-300 group
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-600/60 to-indigo-600/60 text-white shadow-lg' 
+                    ${isActive
+                      ? 'bg-gradient-to-r from-blue-600/60 to-indigo-600/60 text-white shadow-lg'
                       : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'}`
                   }
                   onClick={() => setOpen(false)}
                 >
-                  <r.icon 
-                    size={20} 
-                    className="mr-3" 
+                  <r.icon
+                    size={20}
+                    className="mr-3"
                   />
                   <span className="font-medium">{r.label}</span>
                   <div className="ml-auto">
@@ -113,7 +123,7 @@ export default function Sidebar() {
               </li>
             ))}
           </ul>
-          
+
           {/* User section */}
           <div className="p-4 border-t border-blue-700/30">
             <div className="flex items-center p-3 bg-blue-800/30 rounded-xl">
@@ -121,11 +131,15 @@ export default function Sidebar() {
                 <span className="font-bold text-white">JS</span>
               </div>
               <div className="ml-3">
-                <p className="font-medium text-white text-sm">John Smith</p>
-                <p className="text-xs text-blue-200">Student ID: 22XX230</p>
+                <p className="font-medium text-white text-sm">{studentProfile?.name}</p>
+                <p className="text-xs text-blue-200">{studentProfile?.student_id}</p>
+
               </div>
-              <button className="ml-auto p-2 rounded-lg text-blue-200 hover:bg-blue-700/50 hover:text-white transition-colors">
-                <LogOut size={18} />
+              <button
+                onClick={logout}
+                className="ml-auto p-2 rounded-lg text-blue-200 hover:bg-blue-700/50 hover:text-white transition-colors"
+              >
+                <LogOut size={20} />
               </button>
             </div>
           </div>
