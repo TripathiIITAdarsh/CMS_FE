@@ -16,6 +16,7 @@ interface Course {
   practical: number;
   status: string;
   course_type:string;
+  course_mode: 'regular' | 'pass_fail' | 'audit' | 'equivalent' | 'backlog';
 }
 
 interface SlotGroup {
@@ -32,42 +33,39 @@ const CoursesRegistered = () => {
   const [error, setError] = useState<string | null>(null);
   const [slotGroups, setSlotGroups] = useState<SlotGroup>({});
   const [deregistering, setDeregistering] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
    
     // Simulating API call
-    const fetchRegisteredCourses = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        // In a real application, this would be an actual API call
-        const res = await apiCall(`http://localhost:3000/prereg`,{
-          method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        const dataF = await res.json();
-        
-        
-        const flatCourses: Course[] = dataF.courses.map((entry: any) => ({
-          course_id: entry.course.course_id,
-          course_code: entry.course.course_code,
-          course_name: entry.course.course_name,
-          school: entry.course.school,
-          slot: entry.course.slot,
-          credits: entry.course.credits,
-          lecture: entry.course.lecture,
-          tutorial: entry.course.tutorial,
-          practical: entry.course.practical,
-          status: entry.accept_reject ? "Registered" : "Pending",
-          course_type: entry.pre_reg_course_type || "Unknown"
-        }));
-        setCourses(flatCourses);
-        groupCoursesBySlot(flatCourses);
-        setLoading(false);
-      } catch (err) {
+    useEffect(() => {
+  const fetchRegisteredCourses = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const res = await apiCall(`http://localhost:3000/prereg`,{
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const dataF = await res.json();
+      
+      const flatCourses: Course[] = dataF.courses.map((entry: any) => ({
+        course_id: entry.course.course_id,
+        course_code: entry.course.course_code,
+        course_name: entry.course.course_name,
+        school: entry.course.school,
+        slot: entry.course.slot,
+        credits: entry.course.credits,
+        lecture: entry.course.lecture,
+        tutorial: entry.course.tutorial,
+        practical: entry.course.practical,
+        status: entry.accept_reject ? "Registered" : "Pending",
+        course_type: entry.pre_reg_course_type || "Unknown",
+        course_mode: entry.pre_reg_course_mode || "Regular" // ADD THIS LINE
+      }));
+      setCourses(flatCourses);
+      groupCoursesBySlot(flatCourses);
+      setLoading(false);
+    } catch (err) {
         setError('Failed to fetch registered courses');
         setLoading(false);
       }
