@@ -1,6 +1,8 @@
 // pages/CoursesRegistered.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from "./LoginPage";
+import RegisteredSlotComponent from '../components/RegisteredSlotComponent';
 
 interface Course {
   course_id: string;
@@ -20,181 +22,50 @@ interface SlotGroup {
   [slot: string]: Course[];
 }
 
-const RegisteredSlotComponent: React.FC<{ slot: string; courses: Course[] }> = ({ slot, courses }) => {
-  return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200 p-5 mb-6">
-      <div className="flex items-center mb-4">
-        <div className="w-2 h-8 sm:h-10 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-lg mr-3"></div>
-        <h2 className="text-xl font-bold text-blue-900">Slot {slot}</h2>
-      </div>
-      
-      <div className="space-y-4">
-        {courses.map((course) => (
-          <div 
-            key={course.course_id}
-            className="bg-white rounded-xl shadow-sm border border-blue-100 p-4 hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex flex-col sm:flex-row sm:justify-between">
-              <div className="flex-1">
-                <div className="flex flex-wrap items-start gap-2">
-                  <h3 className="text-lg font-semibold text-blue-900">
-                    {course.course_name} ({course.course_code})
-                  </h3>
-                  
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    course.status === 'Registered' 
-                      ? 'bg-green-100 text-green-800' 
-                      : course.status === 'Pending'
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {course.status}
-                  </div>
-                </div>
-                
-                <p className="text-sm text-blue-700 mt-1">{course.school}</p>
-                
-                <div className="flex flex-wrap gap-4 mt-3">
-                  <div className="flex items-center text-sm text-blue-600">
-                    <span className="font-medium mr-1">Credits:</span>
-                    <span>{course.credits}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-blue-600">
-                    <span className="font-medium mr-1">L:</span>
-                    <span>{course.lecture} hrs</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-blue-600">
-                    <span className="font-medium mr-1">T:</span>
-                    <span>{course.tutorial} hrs</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-blue-600">
-                    <span className="font-medium mr-1">P:</span>
-                    <span>{course.practical} hrs</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-3 sm:mt-0 sm:ml-4 flex-shrink-0">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold py-1 px-3 rounded-lg">
-                  Basket: {course.course_type}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+
 
 const CoursesRegistered = () => {
+  const { apiCall } = useAuth();
   const { studentId } = useParams<{ studentId: string }>();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [slotGroups, setSlotGroups] = useState<SlotGroup>({});
+  const [deregistering, setDeregistering] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    // Hardcoded student ID and UID for demonstration
-    const uid = "STU2023ABC123"; // Hardcoded UID
-    const sid = studentId || "22XX230"; // Fallback to default if not in params
-    
+   
     // Simulating API call
     const fetchRegisteredCourses = async () => {
       try {
         setLoading(true);
-        
+        const token = localStorage.getItem('token');
         // In a real application, this would be an actual API call
-        // const response = await fetch(`/api/courses-registered?studentId=${sid}&uid=${uid}`);
-        // const data = await response.json();
-        
-        // Simulated response with hardcoded data
-        const data: Course[] = [
-          {
-            course_id: "CS101",
-            course_code: "CS101",
-            course_name: "Introduction to Computer Science",
-            school: "School of Computing",
-            slot: "A1",
-            credits: 4,
-            lecture: 3,
-            tutorial: 1,
-            practical: 2,
-            status: "Registered",
-            course_type:"IC",
-          },
-          {
-            course_id: "MA202",
-            course_code: "MA202",
-            course_name: "Advanced Mathematics",
-            school: "School of Mathematics",
-            slot: "B2",
-            credits: 3,
-            lecture: 3,
-            tutorial: 1,
-            practical: 0,
-            status: "Registered",
-            course_type:"IC"
-          },
-          {
-            course_id: "PHY105",
-            course_code: "PHY105",
-            course_name: "Modern Physics",
-            school: "School of Physics",
-            slot: "A1",
-            credits: 4,
-            lecture: 3,
-            tutorial: 1,
-            practical: 2,
-            course_type:"IC",
-            status: "Pending"
-          },
-          {
-            course_id: "CS203",
-            course_code: "CS203",
-            course_name: "Data Structures and Algorithms",
-            school: "School of Computing",
-            slot: "C3",
-            credits: 4,
-            lecture: 3,
-            tutorial: 1,
-            practical: 2,
-            course_type:"IC",
-            status: "Registered"
-          },
-          {
-            course_id: "EE101",
-            course_code: "EE101",
-            course_name: "Electrical Engineering Fundamentals",
-            school: "School of Engineering",
-            slot: "B2",
-            credits: 3,
-            lecture: 3,
-            tutorial: 1,
-            practical: 0,
-            course_type:"IC",
-            status: "Registered"
-          },
-          {
-            course_id: "CS305",
-            course_code: "CS305",
-            course_name: "Artificial Intelligence",
-            school: "School of Computing",
-            slot: "D4",
-            credits: 4,
-            lecture: 3,
-            tutorial: 1,
-            practical: 2,
-            course_type:"IC",
-            status: "Pending"
+        const res = await apiCall(`http://localhost:3000/prereg`,{
+          method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
-        ];
+        );
+        const dataF = await res.json();
         
-        setCourses(data);
-        groupCoursesBySlot(data);
+        
+        const flatCourses: Course[] = dataF.courses.map((entry: any) => ({
+          course_id: entry.course.course_id,
+          course_code: entry.course.course_code,
+          course_name: entry.course.course_name,
+          school: entry.course.school,
+          slot: entry.course.slot,
+          credits: entry.course.credits,
+          lecture: entry.course.lecture,
+          tutorial: entry.course.tutorial,
+          practical: entry.course.practical,
+          status: entry.accept_reject ? "Registered" : "Pending",
+          course_type: entry.pre_reg_course_type || "Unknown"
+        }));
+        setCourses(flatCourses);
+        groupCoursesBySlot(flatCourses);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch registered courses');
@@ -217,6 +88,36 @@ const CoursesRegistered = () => {
     
     setSlotGroups(groups);
   };
+
+  const handleDeRegister = async (course_id: string) => {
+  if (!window.confirm("Are you sure you want to de-register from this course?")) {
+    return;
+  }
+
+  try {
+    setDeregistering(prev => ({ ...prev, [course_id]: true }));
+    const token = localStorage.getItem('token');
+    
+    await apiCall(`http://localhost:3000/deprereg/single/${course_id}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    // Reload the page instead of updating local state
+    window.location.reload(); // Add this line
+  } catch (err) {
+    console.error("De-registration failed:", err);
+    alert("Failed to de-register. Please try again.");
+  } finally {
+    setDeregistering(prev => {
+      const newState = { ...prev };
+      delete newState[course_id];
+      return newState;
+    });
+  }
+};
 
   if (loading) {
     return (
@@ -293,6 +194,8 @@ const CoursesRegistered = () => {
               key={slot} 
               slot={slot} 
               courses={slotCourses} 
+              onDeRegister={handleDeRegister}
+              deregistering={deregistering}
             />
           ))
         ) : (

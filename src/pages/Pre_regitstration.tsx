@@ -13,14 +13,19 @@ interface Course {
   lecture: number;
   tutorial: number;
   practical: number;
-  type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE' | 'IK';
+  type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE';
   status: boolean;
 }
 
 interface CourseSelection {
   course_id: string;
-  enrollmentType: 'Regular' | 'PASS-fail' | 'equivalent' | 'audit' | 'backlog';
+  enrollmentType: 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog';
+  course_type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE';
 }
+
+
+
+
 
 const PreRegistrationPage = () => {
   const { apiCall } = useAuth();
@@ -41,7 +46,6 @@ const PreRegistrationPage = () => {
     DE: 0,
     HSS: 0,
     FE: 0,
-    IK: 0
   });
 
   // FIX: Memoize student object to prevent recreation on every render
@@ -62,16 +66,17 @@ const PreRegistrationPage = () => {
           year: student.batch.toString(),
           program: student.program,
           school: student.school,
-          semester: "odd",
+          semester: "even",
           student_id: student.student_id
         });
 
-        const res = await apiCall(`http://localhost:4000/courses/final_courses?${params.toString()}`);
+        const res = await apiCall(`http://localhost:4000/courses/get_pre_reg_courses?${params.toString()}`);
         
         // FIX: Check if component is still mounted
         if (abortController.signal.aborted) return;
         
         const data = await res.json();
+        console.log(data);
         const rawCourses: Course[] = data.final_courses || [];
 
         const preRegistered = new Set<string>();
@@ -87,7 +92,8 @@ const PreRegistrationPage = () => {
           if (!course.status) {
             preRegisteredSelections.push({
               course_id: course.course_id,
-              enrollmentType: 'Regular'
+              enrollmentType: 'regular',
+              course_type: course.type
             });
           }
         });
@@ -145,20 +151,49 @@ const PreRegistrationPage = () => {
     setCourseTypeCounts(counts);
   }, [selectedCourses, groupedCourses]);
 
-  const toggleCourse = (id: string) => {
-    if (preRegisteredCourses.has(id)) return;
-    
-    setSelectedCourses(prev => {
-      const existingIndex = prev.findIndex(s => s.course_id === id);
-      if (existingIndex >= 0) {
-        return prev.filter(s => s.course_id !== id);
-      } else {
-        return [...prev, { course_id: id, enrollmentType: 'Regular' }];
-      }
-    });
+  const hasPreRegisteredInSlot = (slot: string) => {
+    return Object.values(groupedCourses)
+      .flat()
+      .some(course => 
+        course.slot === slot && 
+        preRegisteredCourses.has(course.course_id)
+      );
   };
 
-  const updateEnrollmentType = (courseId: string, type: 'Regular' | 'PASS-fail' | 'equivalent' | 'audit' | 'backlog') => {
+  const toggleCourse = (id: string) => {
+  if (preRegisteredCourses.has(id)) return;
+
+  const courseToToggle = Object.values(groupedCourses)
+    .flat()
+    .find(c => c.course_id === id);
+
+  if (!courseToToggle) return;
+
+  // Check if slot already has a pre-registered course
+  if (hasPreRegisteredInSlot(courseToToggle.slot)) {
+    alert(`You cannot select another course in slot ${courseToToggle.slot} as you already have a pre-registered course in this slot.`);
+    return;
+  }
+  
+  setSelectedCourses(prev => {
+    const existingIndex = prev.findIndex(s => s.course_id === id);
+    if (existingIndex >= 0) {
+      return prev.filter(s => s.course_id !== id);
+    } else {
+      // Find the course to get its type
+      const course = Object.values(groupedCourses)
+        .flat()
+        .find(c => c.course_id === id);
+      return [...prev, { 
+        course_id: id, 
+        enrollmentType: 'regular',
+        course_type: course?.type || 'DE' // Default to 'DE' if not found, but should always be found
+      }];
+    }
+  });
+};
+
+  const updateEnrollmentType = (courseId: string, type: 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog') => {
     if (preRegisteredCourses.has(courseId)) return;
     
     setSelectedCourses(prev => 
@@ -184,13 +219,14 @@ const PreRegistrationPage = () => {
       
       for (const selection of newSelections) {
         const payload = {
-          enrollmentType: selection.enrollmentType,
           studentId: student.student_id,
-          uid: "df37aabe-77f0-4095-af0b-d073ef7cef0e"
+          uid: student.uid,
+          course_mode: selection.enrollmentType,
+          course_type: selection.course_type
         };
         
         const res = await apiCall(
-          `/prereg/single/${selection.course_id}`,
+          `http://localhost:3000/prereg/single/${selection.course_id}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -344,7 +380,7 @@ const PreRegistrationPage = () => {
                 enrollmentTypes={selectedCourses.reduce((acc, curr) => {
                   acc[curr.course_id] = curr.enrollmentType;
                   return acc;
-                }, {} as Record<string, 'Regular' | 'PASS-fail' | 'equivalent' | 'audit'>)}
+                }, {} as Record<string, 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog'>)}
                 updateEnrollmentType={updateEnrollmentType}
               />
             </div>

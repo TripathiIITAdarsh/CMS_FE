@@ -19,8 +19,8 @@ interface SlotProps {
   courses: Course[];
   selectedCourses: Set<string>;
   toggleCourse: (id: string) => void;
-  enrollmentTypes: Record<string, 'Regular' | 'PASS-fail' | 'equivalent' | 'audit'>;
-  updateEnrollmentType: (courseId: string, type: 'Regular' | 'PASS-fail' | 'equivalent' | 'audit') => void;
+  enrollmentTypes: Record<string, 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog'>;
+  updateEnrollmentType: (courseId: string, type: 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog') => void;
 }
 
 const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({ 
@@ -125,14 +125,15 @@ const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({
                       value={enrollmentType}
                       onChange={(e) => updateEnrollmentType(
                         course.course_id, 
-                        e.target.value as 'Regular' | 'PASS-fail' | 'equivalent' | 'audit'
+                        e.target.value as 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog'
                       )}
                       className="bg-blue-50 border border-blue-300 text-blue-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                     >
-                      <option value="Regular">Regular</option>
-                      <option value="PASS-fail">PASS-fail</option>
+                      <option value="regular">Regular</option>
+                      <option value="pass_fail">PASS-fail</option>
                       <option value="equivalent">Equivalent</option>
                       <option value="audit">Audit</option>
+                      <option value="backlog">Backlog</option>
                     </select>
                   </div>
                 )}

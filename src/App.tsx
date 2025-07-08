@@ -7,6 +7,7 @@ import SlotWiseCourses from './pages/Pre_regitstration';
 import PrivateRoute from './components/PrivateRoutes';
 import { AuthProvider } from './pages/LoginPage';
 import CoursesRegistered from './pages/Pre_registered_courses';
+import AllCoursesPage from './pages/AllCourses';
 function App() {
   return (
     <AuthProvider>
@@ -22,6 +23,7 @@ function App() {
             {/* <Route path="/student/:enrollment" element={<StudentDash />} /> */}
             <Route path="/pre_reg" element={<SlotWiseCourses />} />
             <Route path='/courses-registered/:studentId?' element={<CoursesRegistered />} />
+            <Route path="/courses" element={<AllCoursesPage/>} />
           </Route>
              
           

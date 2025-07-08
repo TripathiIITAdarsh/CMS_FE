@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Login function
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await fetch(`${API_BASE}/login`, {
+      const response = await fetch(`http://localhost:3000${API_BASE}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

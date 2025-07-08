@@ -9,10 +9,10 @@ import {
 import { useAuth } from '../pages/LoginPage';
 const routes = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/courses', label: 'All Courses', icon: BookOpen },
   { path: '/pre_reg', label: 'Pre‑Registration', icon: ClipboardList },
     { path: 'courses-registered/:studentId?', label: 'Pre registered courses', icon: LayoutDashboard },
-  { path: '/courses', label: 'My Courses', icon: BookOpen },
-
+  
 ];
 
 const studentString = localStorage.getItem('studentProfile');
