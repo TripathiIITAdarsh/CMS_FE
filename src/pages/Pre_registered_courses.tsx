@@ -23,6 +23,13 @@ interface SlotGroup {
   [slot: string]: Course[];
 }
 
+const studentString = localStorage.getItem('studentProfile');
+let studentProfile: any = null;
+
+if (studentString) {
+  studentProfile = JSON.parse(studentString);
+}
+
 
 
 const CoursesRegistered = () => {
@@ -153,10 +160,10 @@ const CoursesRegistered = () => {
           
           <div className="mt-4 md:mt-0 bg-white/20 rounded-lg p-3">
             <p className="text-white font-medium">
-              Student ID: <span className="font-bold">{studentId || "22XX230"}</span>
+              Student ID: <span className="font-bold">{studentProfile?.student_id}</span>
             </p>
             <p className="text-blue-100 text-sm mt-1">
-              Semester: Fall 2023
+              Semester: ODD 2025
             </p>
           </div>
         </div>
