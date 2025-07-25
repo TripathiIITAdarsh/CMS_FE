@@ -3,6 +3,17 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from "./LoginPage";
 import RegisteredSlotComponent from '../components/RegisteredSlotComponent';
+const getSemester = (oddStartMonth = 7, oddEndMonth = 12) => {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  
+  if (month >= oddStartMonth && month <= oddEndMonth) {
+    return `ODD ${year}`;
+  } else {
+    return `EVEN ${year}`;
+  }
+};
 
 interface Course {
   course_id: string;
@@ -40,7 +51,8 @@ const CoursesRegistered = () => {
   const [error, setError] = useState<string | null>(null);
   const [slotGroups, setSlotGroups] = useState<SlotGroup>({});
   const [deregistering, setDeregistering] = useState<Record<string, boolean>>({});
-   
+  const currentSemester = getSemester();
+
     // Simulating API call
     useEffect(() => {
   const fetchRegisteredCourses = async () => {
@@ -163,7 +175,7 @@ const CoursesRegistered = () => {
               Student ID: <span className="font-bold">{studentProfile?.student_id}</span>
             </p>
             <p className="text-blue-100 text-sm mt-1">
-              Semester: ODD 2025
+              Semester: {currentSemester}
             </p>
           </div>
         </div>

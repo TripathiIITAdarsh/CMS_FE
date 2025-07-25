@@ -1,7 +1,17 @@
 // pages/AllCoursesPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "./LoginPage";
-
+const getSemester = (oddStartMonth = 7, oddEndMonth = 12) => {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  
+  if (month >= oddStartMonth && month <= oddEndMonth) {
+    return `ODD ${year}`;
+  } else {
+    return `EVEN ${year}`;
+  }
+};
 interface CourseHelper {
   branch?: string;
   course_type?: string;
@@ -114,6 +124,8 @@ const SlotGroupComponent: React.FC<{ slot: string; courses: Course[] }> = ({ slo
 };
 
 const AllCoursesPage = () => {
+    const currentSemester = getSemester();
+
   const [courses, setCourses] = useState<Course[]>([]);
     const { apiCall } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -192,7 +204,7 @@ const AllCoursesPage = () => {
           
           <div className="mt-4 md:mt-0 bg-white/20 rounded-lg p-3">
             <p className="text-white font-medium">
-              Current Semester: Odd 2025
+              Current Semester: {currentSemester}
             </p>
           </div>
         </div>
