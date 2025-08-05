@@ -23,9 +23,11 @@ interface CourseSelection {
   course_type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE';
 }
 
-
-
-
+interface Notification {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
 
 const PreRegistrationPage = () => {
   const { apiCall } = useAuth();
@@ -36,6 +38,7 @@ const PreRegistrationPage = () => {
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preRegisteredCourses, setPreRegisteredCourses] = useState<Set<string>>(new Set());
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   // Stats for the summary
@@ -47,6 +50,21 @@ const PreRegistrationPage = () => {
     HSS: 0,
     FE: 0,
   });
+
+  // Notification functions
+  const addNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { id, type, message }]);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   // FIX: Memoize student object to prevent recreation on every render
   const student = useMemo(() => {
@@ -161,37 +179,37 @@ const PreRegistrationPage = () => {
   };
 
   const toggleCourse = (id: string) => {
-  if (preRegisteredCourses.has(id)) return;
+    if (preRegisteredCourses.has(id)) return;
 
-  const courseToToggle = Object.values(groupedCourses)
-    .flat()
-    .find(c => c.course_id === id);
+    const courseToToggle = Object.values(groupedCourses)
+      .flat()
+      .find(c => c.course_id === id);
 
-  if (!courseToToggle) return;
+    if (!courseToToggle) return;
 
-  // Check if slot already has a pre-registered course
-  if (hasPreRegisteredInSlot(courseToToggle.slot)) {
-    alert(`You cannot select another course in slot ${courseToToggle.slot} as you already have a pre-registered course in this slot.`);
-    return;
-  }
-  
-  setSelectedCourses(prev => {
-    const existingIndex = prev.findIndex(s => s.course_id === id);
-    if (existingIndex >= 0) {
-      return prev.filter(s => s.course_id !== id);
-    } else {
-      // Find the course to get its type
-      const course = Object.values(groupedCourses)
-        .flat()
-        .find(c => c.course_id === id);
-      return [...prev, { 
-        course_id: id, 
-        enrollmentType: 'regular',
-        course_type: course?.type || 'DE' // Default to 'DE' if not found, but should always be found
-      }];
+    // Check if slot already has a pre-registered course
+    if (hasPreRegisteredInSlot(courseToToggle.slot)) {
+      addNotification('error', `You cannot select another course in slot ${courseToToggle.slot} as you already have a pre-registered course in this slot.`);
+      return;
     }
-  });
-};
+    
+    setSelectedCourses(prev => {
+      const existingIndex = prev.findIndex(s => s.course_id === id);
+      if (existingIndex >= 0) {
+        return prev.filter(s => s.course_id !== id);
+      } else {
+        // Find the course to get its type
+        const course = Object.values(groupedCourses)
+          .flat()
+          .find(c => c.course_id === id);
+        return [...prev, { 
+          course_id: id, 
+          enrollmentType: 'regular',
+          course_type: course?.type || 'DE' // Default to 'DE' if not found, but should always be found
+        }];
+      }
+    });
+  };
 
   const updateEnrollmentType = (courseId: string, type: 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog') => {
     if (preRegisteredCourses.has(courseId)) return;
@@ -207,7 +225,7 @@ const PreRegistrationPage = () => {
 
   const handleSubmit = async () => {
     if (selectedCourses.length === 0) {
-      alert("Please select at least one course before submitting.");
+      addNotification('error', 'Please select at least one course before submitting.');
       return;
     }
     
@@ -217,6 +235,9 @@ const PreRegistrationPage = () => {
         selection => !preRegisteredCourses.has(selection.course_id)
       );
       
+      let successCount = 0;
+      let failedCourses: string[] = [];
+      
       for (const selection of newSelections) {
         const payload = {
           studentId: student.student_id,
@@ -225,26 +246,56 @@ const PreRegistrationPage = () => {
           course_type: selection.course_type
         };
         
-        const res = await apiCall(
-          `http://localhost:3000/prereg/single/${selection.course_id}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+        try {
+          const res = await apiCall(
+            `http://localhost:3000/prereg/single/${selection.course_id}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            }
+          );
+          
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            const errorMessage = errorData.message || errorData.error || `Failed to register course ${selection.course_id}`;
+            
+            // Find course name for better error display
+            const course = Object.values(groupedCourses)
+              .flat()
+              .find(c => c.course_id === selection.course_id);
+            const courseName = course ? `${course.course_code} - ${course.course_name}` : selection.course_id;
+            
+            failedCourses.push(courseName);
+            addNotification('error', `${courseName}: ${errorMessage}`);
+          } else {
+            successCount++;
+            // Add to pre-registered set immediately on success
+            setPreRegisteredCourses(prev => new Set([...prev, selection.course_id]));
           }
-        );
-        
-        if (!res.ok) throw new Error(`Failed to register course ${selection.course_id}`);
+        } catch (courseError) {
+          console.error(`Error registering course ${selection.course_id}:`, courseError);
+          const course = Object.values(groupedCourses)
+            .flat()
+            .find(c => c.course_id === selection.course_id);
+          const courseName = course ? `${course.course_code} - ${course.course_name}` : selection.course_id;
+          failedCourses.push(courseName);
+          addNotification('error', `${courseName}: Network error occurred`);
+        }
       }
       
-      const newPreRegistered = new Set(preRegisteredCourses);
-      newSelections.forEach(selection => newPreRegistered.add(selection.course_id));
-      setPreRegisteredCourses(newPreRegistered);
+      // Show summary notification
+      if (successCount > 0) {
+        addNotification('success', `Successfully submitted ${successCount} course${successCount > 1 ? 's' : ''}!`);
+      }
       
-      alert(`Successfully submitted ${newSelections.length} courses!`);
+      if (failedCourses.length > 0) {
+        addNotification('error', `Failed to submit ${failedCourses.length} course${failedCourses.length > 1 ? 's' : ''}. Check individual error messages above.`);
+      }
+      
     } catch (err) {
       console.error("Submission error:", err);
-      alert("Failed to submit courses. Please try again.");
+      addNotification('error', 'Failed to submit courses. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -307,6 +358,66 @@ const PreRegistrationPage = () => {
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-indigo-50 min-h-screen">
+      {/* Notification Container */}
+      <div className="fixed top-4 right-4 z-50 space-y-3 max-w-md">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`
+              p-4 rounded-lg shadow-lg border-l-4 transform transition-all duration-300 ease-in-out
+              ${notification.type === 'success' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : notification.type === 'error'
+                ? 'bg-red-50 border-red-500 text-red-800'
+                : 'bg-blue-50 border-blue-500 text-blue-800'
+              }
+            `}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  {notification.type === 'success' && (
+                    <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {notification.type === 'error' && (
+                    <svg className="w-5 h-5 text-red-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {notification.type === 'info' && (
+                    <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium break-words">{notification.message}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className={`
+                  ml-4 flex-shrink-0 rounded-md p-1.5 inline-flex 
+                  ${notification.type === 'success' 
+                    ? 'text-green-500 hover:bg-green-100' 
+                    : notification.type === 'error'
+                    ? 'text-red-500 hover:bg-red-100'
+                    : 'text-blue-500 hover:bg-blue-100'
+                  }
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                `}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* HEADING SECTION - PRESERVED */}
         <div className="text-center mb-8">
