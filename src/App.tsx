@@ -2,10 +2,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthLayout from './components/AuthLayout';
 import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Stdash';
+import Dashboard from './pages/Dashboard';
 import SlotWiseCourses from './pages/Pre_regitstration';
 import PrivateRoute from './components/PrivateRoutes';
-import { AuthProvider } from './pages/LoginPage';
+import { AuthProvider } from './context/AuthContext';
 import CoursesRegistered from './pages/Pre_registered_courses';
 import AllCoursesPage from './pages/AllCourses';
 function App() {
