@@ -1,7 +1,6 @@
  // components/PrivateRoute.jsx
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../pages/LoginPage'; // update this path
-
+import { useAuth } from '../context/AuthContext';
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 

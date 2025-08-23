@@ -6,7 +6,7 @@ import {
   X, Menu, GraduationCap, Settings,
   BookOpen, HelpCircle, LogOut
 } from 'lucide-react';
-import { useAuth } from '../pages/LoginPage';
+import { useAuth } from '../context/AuthContext';
 const routes = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/courses', label: 'All Courses', icon: BookOpen },

@@ -1,7 +1,7 @@
 // pages/CoursesRegistered.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from "./LoginPage";
+import { useAuth } from '../context/AuthContext';
 import RegisteredSlotComponent from '../components/RegisteredSlotComponent';
 const getSemester = (oddStartMonth = 7, oddEndMonth = 12) => {
   const now = new Date();
