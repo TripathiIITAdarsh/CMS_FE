@@ -4,7 +4,7 @@ const API_BASE = 'http://localhost:';
 
 export const authService = {
   async login(credentials: LoginCredentials) {
-    const response = await fetch(`${API_BASE}/login`, {
+    const response = await fetch(`${API_BASE}3000/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

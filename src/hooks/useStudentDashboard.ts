@@ -1,33 +1,47 @@
 import { useState, useEffect } from 'react';
 import type { StudentProfile, CourseProgress, ProgressStats } from '../types/student';
 import { useStudentAPI } from '../services/studentService';
-import { MOCK_COURSE_PROGRESS } from '../constants/courseProgress';
 import { calculateProgressStats, cacheStudentProfile } from '../utils/progress';
 
 export const useStudentDashboard = () => {
   const [student, setStudent] = useState<StudentProfile | null>(null);
+  const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
+  const [progressStats, setProgressStats] = useState<ProgressStats>({
+    totalCredits: 0,
+    completedCredits: 0,
+    overallPercentage: 0,
+    categoriesCompleted: 0,
+    categoriesInProgress: 0,
+    categoriesNotStarted: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const { getStudentDetails } = useStudentAPI();
-  
-  // For now using mock data, but this could also come from API
-  const courseProgress = MOCK_COURSE_PROGRESS;
-  const progressStats = calculateProgressStats(courseProgress);
+  const { getStudentDetails, getCourseProgress } = useStudentAPI();
 
-  const fetchStudentDetails = async () => {
+  const fetchStudentData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const studentData = await getStudentDetails();
+      // Fetch both student details and course progress
+      const [studentData, courseProgressData] = await Promise.all([
+        getStudentDetails(),
+        getCourseProgress()
+      ]);
+
       setStudent(studentData);
+      setCourseProgress(courseProgressData);
+      
+      // Calculate progress stats from the fetched data
+      const stats = calculateProgressStats(courseProgressData);
+      setProgressStats(stats);
       
       // Cache the student profile
       cacheStudentProfile(studentData);
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch student details';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch student data';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -35,11 +49,11 @@ export const useStudentDashboard = () => {
   };
 
   useEffect(() => {
-    fetchStudentDetails();
+    fetchStudentData();
   }, []);
 
   const refetch = () => {
-    fetchStudentDetails();
+    fetchStudentData();
   };
 
   return {
