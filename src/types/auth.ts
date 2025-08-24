@@ -22,5 +22,5 @@ export interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
-  apiCall: (url: string, options?: RequestInit) => Promise<Response>;
+apiCall: (url: string, options?: RequestInit, port?: number) => Promise<any>;
 }

@@ -64,8 +64,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(null);
   };
 
-  const apiCall = async (url: string, options: RequestInit = {}) => {
-    return authService.apiCall(url, options);
+  const apiCall = async (url: string, options: RequestInit = {},port : number = 3000) => {
+    return authService.apiCall(url, options,port);
   };
 
   const value: AuthContextType = {

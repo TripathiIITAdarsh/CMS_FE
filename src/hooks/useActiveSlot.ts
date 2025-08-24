@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export const useSlotScroll = (groupedCourses: Record<string, any[]>) => {
+export const useActiveSlot = (groupedCourses: Record<string, any[]>) => {
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
   const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
 

@@ -1,4 +1,4 @@
-export interface PreRegCourse {
+export interface Course {
   course_id: string;
   course_code: string;
   course_name: string;
@@ -18,7 +18,14 @@ export interface CourseSelection {
   course_type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE';
 }
 
-export interface CourseTypeStats {
+export interface Notification {
+  id: string; // must be unique
+  type: "success" | "error" | "info";
+  message: string;
+}
+
+
+export interface CourseTypeCounts {
   IC: number;
   DC: number;
   DE: number;
@@ -26,20 +33,18 @@ export interface CourseTypeStats {
   FE: number;
 }
 
-export interface PreRegSubmissionPayload {
+export interface Student {
+  student_id: string;
+  uid: string;
+  branch: string;
+  batch: number;
+  program: string;
+  school: string;
+}
+
+export interface SubmissionPayload {
   studentId: string;
   uid: string;
   course_mode: string;
   course_type: string;
-}
-
-export interface PreRegState {
-  groupedCourses: Record<string, PreRegCourse[]>;
-  selectedCourses: CourseSelection[];
-  preRegisteredCourses: Set<string>;
-  totalCredits: number;
-  courseTypeCounts: CourseTypeStats;
-  loading: boolean;
-  error: string | null;
-  isSubmitting: boolean;
 }

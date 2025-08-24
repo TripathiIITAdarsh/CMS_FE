@@ -1,4 +1,3 @@
-// components/EnhancedSlotComponent.tsx
 import React, { forwardRef } from "react";
 
 interface Course {
@@ -14,23 +13,29 @@ interface Course {
   type: 'IC' | 'DC' | 'DE' | 'HSS' | 'FE' | 'IK';
 }
 
+type EnrollmentType = 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog';
+
 interface SlotProps {
   slot: string;
   courses: Course[];
   selectedCourses: Set<string>;
+  preRegisteredCourses: Set<string>;   // ⬅️ add this
   toggleCourse: (id: string) => void;
-  enrollmentTypes: Record<string, 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog'>;
-  updateEnrollmentType: (courseId: string, type: 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog') => void;
+  enrollmentTypes: Record<string, EnrollmentType>;
+  updateEnrollmentType: (courseId: string, type: EnrollmentType) => void;
 }
 
-const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({ 
-  slot, 
-  courses, 
-  selectedCourses, 
-  toggleCourse,
-  enrollmentTypes,
-  updateEnrollmentType
-}, ref) => {
+
+const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(
+  ({ 
+    slot, 
+    courses, 
+    selectedCourses, 
+    toggleCourse,
+    enrollmentTypes,
+    updateEnrollmentType
+  }, ref) => {
+  
   // Color mapping for course types
   const typeColors = {
     IC: 'bg-blue-100 text-blue-800',
@@ -39,6 +44,15 @@ const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({
     HSS: 'bg-amber-100 text-amber-800',
     FE: 'bg-cyan-100 text-cyan-800',
     IK: 'bg-pink-100 text-pink-800'
+  };
+
+  // Enrollment type labels (UI text vs stored value)
+  const enrollmentLabels: Record<EnrollmentType, string> = {
+    regular: "Regular",
+    pass_fail: "Pass/Fail",
+    equivalent: "Equivalent",
+    audit: "Audit",
+    backlog: "Backlog"
   };
 
   return (
@@ -57,7 +71,8 @@ const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({
       <div className="p-5 space-y-4">
         {courses.map((course) => {
           const isSelected = selectedCourses.has(course.course_id);
-          const enrollmentType = enrollmentTypes[course.course_id] || 'Regular';
+          const enrollmentType: EnrollmentType =
+            enrollmentTypes[course.course_id] || "regular";
           
           return (
             <div 
@@ -123,17 +138,19 @@ const SlotComponent = forwardRef<HTMLDivElement, SlotProps>(({
                     </label>
                     <select
                       value={enrollmentType}
-                      onChange={(e) => updateEnrollmentType(
-                        course.course_id, 
-                        e.target.value as 'regular' | 'pass_fail' | 'equivalent' | 'audit' | 'backlog'
-                      )}
+                      onChange={(e) =>
+                        updateEnrollmentType(
+                          course.course_id, 
+                          e.target.value as EnrollmentType
+                        )
+                      }
                       className="bg-blue-50 border border-blue-300 text-blue-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                     >
-                      <option value="regular">Regular</option>
-                      <option value="pass_fail">PASS-fail</option>
-                      <option value="equivalent">Equivalent</option>
-                      <option value="audit">Audit</option>
-                      <option value="backlog">Backlog</option>
+                      {Object.entries(enrollmentLabels).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}

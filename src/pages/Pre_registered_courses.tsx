@@ -59,12 +59,12 @@ const CoursesRegistered = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await apiCall(`http://localhost:3000/prereg`,{
+      const res = await apiCall(`/get_pre_reg_courses`,{
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
+      },4000);
       const dataF = await res.json();
       
       const flatCourses: Course[] = dataF.courses.map((entry: any) => ({
@@ -115,12 +115,12 @@ const CoursesRegistered = () => {
     setDeregistering(prev => ({ ...prev, [course_id]: true }));
     const token = localStorage.getItem('token');
     
-    await apiCall(`http://localhost:3000/deprereg/single/${course_id}`, {
+    await apiCall(`/deprereg/single/${course_id}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
       }
-    });
+    },4000);
 
     // Reload the page instead of updating local state
     window.location.reload(); // Add this line

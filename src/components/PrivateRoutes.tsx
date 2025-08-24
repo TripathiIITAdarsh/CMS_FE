@@ -1,7 +1,13 @@
- // components/PrivateRoute.jsx
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-const PrivateRoute = ({ children }) => {
+// components/PrivateRoute.tsx
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+interface PrivateRouteProps {
+  children: ReactNode;
+}
+
+const PrivateRoute = ({ children }: PrivateRouteProps) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) return <div>Loading...</div>;

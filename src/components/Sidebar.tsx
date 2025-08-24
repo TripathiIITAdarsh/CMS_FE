@@ -70,7 +70,7 @@ const { logout } = useAuth();
           ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >
-        <div className="h-full flex flex-col bg-gradient-to-br from-blue-900/90 via-blue-800/90 to-indigo-900/90 backdrop-blur-lg border-r border-blue-700/30 shadow-2xl">
+        <div className="h-full flex flex-col bg-gradient-to-br from-blue-800/90 via-blue-800/90 to-indigo-900/90 backdrop-blur-lg border-r border-blue-700/30 shadow-2xl">
           {/* Header with logo and close button for mobile */}
           <div className="p-6 pb-4 border-b border-blue-600/30 flex justify-between items-center">
             <div className="flex items-center space-x-3">

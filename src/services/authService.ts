@@ -1,6 +1,6 @@
 import type { LoginCredentials } from '../types/auth';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'http://localhost:';
 
 export const authService = {
   async login(credentials: LoginCredentials) {
@@ -21,14 +21,15 @@ export const authService = {
     return data;
   },
 
-  async apiCall(url: string, options: RequestInit = {}) {
+  async apiCall(url: string, options: RequestInit = {},port : number = 3000) {
+    console.log(port)
     const token = localStorage.getItem('token');
     
     if (!token) {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_BASE}${url}`, {
+    const response = await fetch(`${API_BASE}${port}${url}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
