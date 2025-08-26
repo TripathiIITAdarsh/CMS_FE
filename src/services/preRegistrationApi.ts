@@ -6,14 +6,24 @@ export class PreRegistrationApi {
   constructor(apiCall: (url: string, options?: any, timeout?: number) => Promise<Response>) {
     this.apiCall = apiCall;
   }
-
+  getSemester = (oddStartMonth = 7, oddEndMonth = 12) => {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    
+    if (month >= oddStartMonth && month <= oddEndMonth) {
+      return `odd`;
+    } else {
+      return `even`;
+    }
+  };
   async fetchCourses(student: Student): Promise<Course[]> {
     const params = new URLSearchParams({
       branch: student.branch,
       year: student.batch.toString(),
       program: student.program,
       school: student.school,
-      semester: "even",
+      semester: this.getSemester(),
       student_id: student.student_id
     });
 
