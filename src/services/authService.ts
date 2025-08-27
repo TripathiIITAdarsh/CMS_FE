@@ -29,7 +29,7 @@ export const authService = {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_BASE}${port}${url}`, {
+    const response = await fetch(`${API_BASE}3000${url}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
