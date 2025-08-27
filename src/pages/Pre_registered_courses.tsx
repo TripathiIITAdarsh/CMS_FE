@@ -59,12 +59,12 @@ const CoursesRegistered = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await apiCall(`/get_pre_reg_courses`,{
+      const res = await apiCall(`/prereg`,{
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      },4000);
+      },3000);
       const dataF = await res.json();
       
       const flatCourses: Course[] = dataF.courses.map((entry: any) => ({
